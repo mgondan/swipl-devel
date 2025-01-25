@@ -813,7 +813,7 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
     unz_file_info64_internal file_info_internal;
     int err=UNZ_OK;
     uLong uMagic;
-    long lSeek=0;
+    size_t lSeek=0;
     uLong uL;
 
     if (file==NULL)
