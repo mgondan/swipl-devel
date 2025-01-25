@@ -339,7 +339,7 @@ extern int ZEXPORT zipClose(zipFile file,
 */
 
 
-extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, int* dataLen, short sHeader);
+extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, size_t* dataLen, short sHeader);
 /*
   zipRemoveExtraInfoBlock -  Added by Mathias Svensson
 

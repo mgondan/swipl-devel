@@ -1911,13 +1911,13 @@ extern int ZEXPORT zipClose(zipFile file, const char* global_comment) {
     return err;
 }
 
-extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, int* dataLen, short sHeader) {
+extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, size_t* dataLen, short sHeader) {
   char* p = pData;
-  int size = 0;
+  size_t size = 0;
   char* pNewHeader;
   char* pTmp;
   short header;
-  short dataSize;
+  unsigned short dataSize;
 
   int retVal = ZIP_OK;
 
@@ -1930,7 +1930,7 @@ extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, int* dataLen, short sHea
   while(p < (pData + *dataLen))
   {
     header = *(short*)p;
-    dataSize = *(((short*)p)+1);
+    dataSize = *(((unsigned short*)p)+1);
 
     if( header == sHeader ) // Header found.
     {
