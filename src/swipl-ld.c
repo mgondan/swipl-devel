@@ -237,7 +237,7 @@ typedef long long ssize_t;
 
 typedef struct
 { char **list;
-  int  size;
+  size_t size;
 } arglist;
 
 					/* prefix strings with ^A to signal */
@@ -431,7 +431,7 @@ appendArgList(arglist *list, const char *arg)
 
 void
 prependArgList(arglist *list, const char *arg)
-{ int n;
+{ size_t n;
 
   if ( list->size == 0 )
   { list->list = xmalloc(sizeof(char*)*2);
@@ -479,7 +479,7 @@ breakargs(const char *line, char **argv)
       while( *end && *end != '"' )
 	end++;
       if ( *end == '"' )
-      { argv[argc++] = strndup(start, end-start);
+      { argv[argc++] = strndup(start, (size_t) (end-start));
 	line = end+1;
 	continue;
       }
@@ -490,7 +490,7 @@ breakargs(const char *line, char **argv)
 
       while(*line && !isspace(CTOI(*line)))
 	line++;
-      argv[argc++] = strndup(start, line-start);
+      argv[argc++] = strndup(start, (size_t) (line-start));
     }
   }
   argv[argc] = NULL;			/* add trailing NULL pointer to argv */
@@ -502,7 +502,7 @@ breakargs(const char *line, char **argv)
 
 void
 addOptionString(const char *s)
-{ char *argv[256];
+{ char *argv[256]; // MG: ARG_MAX?
   int argc = breakargs(s, argv);
 
   parseOptions(argc, argv);
@@ -520,7 +520,7 @@ appendOptions(arglist *args, const char *from)
     while(*from && *from != sep)
       from++;
     if ( from > f )
-    { strncpy(tmp, f, from-f);
+    { strncpy(tmp, f, (size_t) (from-f));
       tmp[from-f] = '\0';
       appendArgList(args, tmp);
     }
@@ -1544,8 +1544,12 @@ copy_fd(int i, int o)
   { while( n > 0 )
     { ssize_t n2;
 
+#ifdef __WINDOWS__
       /* (int) removes error for Windows.  Ugly, but safe. */
       if ( (n2 = write(o, buf, (int)n)) > 0 )
+#else
+      if ((n2 = write(o, buf, (size_t) n)) > 0)
+#endif
       { n -= n2;
       } else
       { fprintf(stderr, "%s: write failed: %s\n", plld, oserror());
@@ -1619,7 +1623,7 @@ createOutput()
   }
 
 #ifdef HAVE_CHMOD
-  { int mask = umask(0777);
+  { mode_t mask = umask(0777);
 
     umask(mask);
 
