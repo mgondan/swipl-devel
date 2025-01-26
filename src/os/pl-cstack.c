@@ -332,7 +332,7 @@ save_backtrace(const char *why)
     size_t frames;
     int current = next_btrace_id(bt);
 
-    frames = backtrace(array, sizeof(array)/sizeof(void *));
+    frames = (size_t) backtrace(array, sizeof(array)/sizeof(void *)); // MG: dubious 2nd arg, dubious cast
     bt->sizes[current] = frames;
     if ( bt->retaddr[current] )
       free(bt->retaddr[current]);
@@ -625,10 +625,11 @@ next_btrace_id(btrace *bt)
 #include "windows/dwarf-debug.c"
 #endif
 
-int backtrace(btrace_stack* trace, PEXCEPTION_POINTERS pExceptionInfo)
+size_t
+backtrace(btrace_stack* trace, PEXCEPTION_POINTERS pExceptionInfo)
 { STACKFRAME64 frame;
   CONTEXT context;
-  int rc = 0;
+  size_t rc = 0;
   HANDLE hThread = GetCurrentThread();
   HANDLE hProcess = GetCurrentProcess();
   char symbolScratch[sizeof(SYMBOL_INFO) + MAX_SYMBOL_LEN];
@@ -636,7 +637,7 @@ int backtrace(btrace_stack* trace, PEXCEPTION_POINTERS pExceptionInfo)
   DWORD64 offset;
   DWORD imageType;
   int skip = 0;
-  int depth = 0;
+  size_t depth = 0;
 
   if (pExceptionInfo == NULL)
   { memset(&context, 0, sizeof(CONTEXT));
@@ -1121,16 +1122,16 @@ thread_c_stack_info(c_stack_info *cinfo)
 
 static size_t
 round_pages(size_t n)
-{ size_t psize;
+{ long psize;
 
 #if defined(HAVE_SYSCONF) && defined(_SC_PAGESIZE)
-  if ( (psize = sysconf(_SC_PAGESIZE)) == (size_t)-1 )
+  if ( (psize = sysconf(_SC_PAGESIZE)) == -1 )
     psize = 8192;
 #else
   psize = 8192;
 #endif
 
-  return ROUND(n, psize);
+  return ROUND(n, (size_t) psize);
 }
 
 static void
