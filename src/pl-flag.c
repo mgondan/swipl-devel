@@ -120,7 +120,7 @@ PRED_IMPL("get_flag", 2, get_flag, 0)
 { PRED_LD
   Flag f;
   word key;
-  int rc;
+  bool rc;
 
   term_t name  = A1;
   term_t value = A2;
