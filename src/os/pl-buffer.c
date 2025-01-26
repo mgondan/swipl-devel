@@ -39,11 +39,11 @@
 
 int
 growBuffer(Buffer b, size_t minfree)
-{ size_t osz = b->max - b->base, sz = osz;
-  size_t top = b->top - b->base;
+{ size_t osz = (size_t) (b->max - b->base), sz = osz;
+  size_t top = (size_t) (b->top - b->base);
   char *new;
 
-  if ( b->max - b->top >= minfree )
+  if ( (size_t) (b->max - b->top) >= minfree )
     return true;
 
   if ( sz < 512 )
@@ -99,7 +99,7 @@ discardStringStack(string_stack *stack)
 
 static string_buffer *
 allocNewStringBuffer(string_stack *stack)
-{ int k = MSB(stack->allocated+1);
+{ unsigned int k = MSB(stack->allocated+1);
 
   if ( !stack->buffers[k] )
   { if ( k == MAX_LG_STACKED_STRINGS )
@@ -201,7 +201,7 @@ popStringBuffer(string_stack *stack)
 
 
 Buffer
-findBuffer(int flags)
+findBuffer(unsigned int flags)
 { GET_LD
   Buffer b;
 
@@ -230,7 +230,7 @@ findBuffer(int flags)
 
 
 char *
-buffer_string(const char *s, int flags)
+buffer_string(const char *s, unsigned int flags)
 { Buffer b = findBuffer(flags);
   size_t l = strlen(s) + 1;
 
@@ -241,7 +241,7 @@ buffer_string(const char *s, int flags)
 
 
 int
-unfindBuffer(Buffer b, int flags)
+unfindBuffer(Buffer b, unsigned int flags)
 { if ( flags & BUF_STACK )
   { GET_LD
     StringBuffer sb = currentBuffer(&LD->fli.string_buffers);

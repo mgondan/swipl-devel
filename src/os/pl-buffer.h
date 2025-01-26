@@ -192,9 +192,9 @@ emptyBuffer_(Buffer b, size_t discardsize, size_t emptysize)
 
 #define LDFUNC_DECLARATIONS
 
-Buffer		findBuffer(int flags);
-int		unfindBuffer(Buffer b, int flags);
-char *		buffer_string(const char *s, int flags);
+Buffer		findBuffer(unsigned int flags);
+int		unfindBuffer(Buffer b, unsigned int flags);
+char *		buffer_string(const char *s, unsigned int flags);
 void		PL_mark_string_buffers(buf_mark_t *mark);
 void		PL_release_string_buffers_from_mark(buf_mark_t mark);
 void		release_string_buffers_from_frame(LocalFrame fr);
