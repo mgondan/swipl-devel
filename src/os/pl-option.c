@@ -155,7 +155,7 @@ typedef struct dictopt_ctx
 { const PL_option_t    *specs;		/* specifications */
   optvalue	       *values;		/* value pointers */
   const char           *opttype;
-  int			flags;
+  unsigned int		flags;
 } dictopt_ctx;
 
 #define dict_option(key, value, last, closure) \
@@ -219,7 +219,7 @@ dict_option(DECL_LD term_t key, term_t value, int last, void *closure)
 	LDFUNC(dict_options, dict, flags, opttype, specs, values)
 
 static int
-dict_options(DECL_LD term_t dict, int flags, const char *opttype,
+dict_options(DECL_LD term_t dict, unsigned int flags, const char *opttype,
 	     const PL_option_t *specs, optvalue *values)
 { dictopt_ctx ctx;
 
@@ -235,7 +235,7 @@ dict_options(DECL_LD term_t dict, int flags, const char *opttype,
 	LDFUNC(vscan_options, list, flags, name, specs, args)
 
 static bool
-vscan_options(DECL_LD term_t options, int flags, const char *opttype,
+vscan_options(DECL_LD term_t options, unsigned int flags, const char *opttype,
 	      const PL_option_t *specs, va_list args)
 { const PL_option_t *s;
   optvalue values[MAXOPTIONS];
@@ -332,7 +332,7 @@ vscan_options(DECL_LD term_t options, int flags, const char *opttype,
 
 
 bool
-PL_scan_options(DECL_LD term_t options, int flags, const char *opttype,
+PL_scan_options(DECL_LD term_t options, unsigned int flags, const char *opttype,
 		const PL_option_t *specs, ...)
 { bool rc;
   va_list args;
@@ -345,7 +345,7 @@ PL_scan_options(DECL_LD term_t options, int flags, const char *opttype,
 }
 
 API_STUB(bool)
-(PL_scan_options)(term_t options, int flags, const char *opttype,
+(PL_scan_options)(term_t options, unsigned int flags, const char *opttype,
 		  PL_option_t *specs, ...)
 ( bool rc;
   va_list args;
