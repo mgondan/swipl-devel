@@ -127,12 +127,12 @@ text_chr(const PL_chars_t *t, int chr)
   { if ( chr <= 0xff )
     { char *e = strchr(t->text.t, chr);
       if ( e )
-	return e-t->text.t;
+	return (size_t) (e - t->text.t);
     }
   } else
   { wchar_t *e = wcschr(t->text.w, chr);
     if ( e )
-      return(e-t->text.w);
+      return(size_t) (e - t->text.w);
   }
 
   return (size_t)-1;

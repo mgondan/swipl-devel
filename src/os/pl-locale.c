@@ -287,7 +287,7 @@ static PL_blob_t locale_blob =
 		 *	   PROLOG HANDLE	*
 		 *******************************/
 
-int
+bool
 unifyLocale(term_t t, PL_locale *l, int alias)
 { GET_LD
   term_t b;
@@ -340,7 +340,7 @@ getLocale(term_t t, PL_locale **lp)
 }
 
 
-int
+bool
 getLocaleEx(term_t t, PL_locale **lp)
 { GET_LD
 
@@ -734,7 +734,7 @@ PRED_IMPL("locale_create", 3, locale_create, 0)
 	}
       }
     } else
-    { return getLocaleEx(A2, &def);
+    { return getLocaleEx(A2, &def) != 0;
     }
   }
 
@@ -778,7 +778,7 @@ PRED_IMPL("locale_create", 3, locale_create, 0)
     if ( alias && !alias_locale(new, alias) )
       goto error;
 
-    int rc = unifyLocale(A1, new, true);
+    bool rc = unifyLocale(A1, new, true);
     DEBUG(0, assert(new->references == 1));
     return rc;
   } else
