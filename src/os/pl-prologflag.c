@@ -119,7 +119,7 @@ typedef struct oneof
 
 typedef struct _prolog_flag
 { unsigned short flags;			/* Type | Flags */
-  short		index;			/* index in LD->prolog_flag.mask */
+  unsigned short index;			/* index in LD->prolog_flag.mask */
   union
   { atom_t	a;			/* value as atom */
     int64_t	i;			/* value as integer */
@@ -134,7 +134,7 @@ typedef struct _prolog_flag
 
 static int unify_prolog_flag_value(DECL_LD Module m, atom_t key, prolog_flag *f, term_t val);
 static int unify_prolog_flag_type(prolog_flag *f, term_t type);
-static int set_flag_type(prolog_flag *f, int flags);
+static int set_flag_type(prolog_flag *f, unsigned short flags);
 
 #define FF_WARN_NOT_ACCESSED 0x0100
 #define FF_ACCESSED          0x0200
@@ -252,7 +252,7 @@ setPrologFlag(const char *name, unsigned int flags, ...)
   initPrologFlagTable();
 
   if ( type == FT_INT64 )
-    flags = (flags & ~FT_MASK)|FT_INTEGER;
+    flags = (flags & (unsigned int) ~FT_MASK)|FT_INTEGER;
 
   if ( (f = lookupHTableWP(GD->prolog_flag.table, an)) )
   { assert((f->flags & FT_MASK) == (flags & FT_MASK));
@@ -274,10 +274,10 @@ setPrologFlag(const char *name, unsigned int flags, ...)
       unsigned int flag = va_arg(args, unsigned int);
 
       if ( !first_def && flag && !f->index )	/* type definition */
-      { f->index = (short)flag;
+      { f->index = (unsigned short) flag;
 	val = (f->value.a == ATOM_true);
       } else if ( first_def )			/* 1st definition */
-      { f->index = (short)flag;
+      { f->index = (unsigned short) flag;
 	DEBUG(MSG_PROLOG_FLAG,
 	      Sdprintf("Prolog flag %s at %d\n", name, flag));
       }
@@ -796,8 +796,8 @@ get_win_file_access_check(void)
 #define PSEUDO_FLAG ((prolog_flag*)true)
 
 static int
-set_flag_type(prolog_flag *f, int flags)
-{ f->flags = (f->flags&~FT_MASK) | (flags&FT_MASK);
+set_flag_type(prolog_flag *f, unsigned short flags)
+{ f->flags = (f->flags & (unsigned short) ~FT_MASK) | (flags & (unsigned short) FT_MASK);
   return true;
 }
 
@@ -1223,7 +1223,7 @@ set_prolog_flag_unlocked(DECL_LD Module m, atom_t k, term_t value, unsigned shor
       { if ( i < 0 )
 	  return PL_error(NULL, 0, NULL, ERR_DOMAIN,
 			  ATOM_not_less_than_zero, value),NULL;
-	LD->yield.frequency = i/16;
+	LD->yield.frequency = (uint64_t) i/16;
       }
 
       f->value.i = i;
@@ -1274,7 +1274,7 @@ set_prolog_flag_ptr(term_t key, term_t value, unsigned short flags, oneof *of)
   return f;
 }
 
-int
+bool
 set_prolog_flag(term_t key, term_t value, unsigned short flags)
 { return !!set_prolog_flag_ptr(key, value, flags, NULL);
 }
@@ -1502,7 +1502,7 @@ unify_prolog_flag_value(DECL_LD Module m, atom_t key, prolog_flag *f, term_t val
   } else if ( key == ATOM_access_level )
   { return PL_unify_atom(val, accessLevel());
   } else if ( key == ATOM_stack_limit )
-  { return PL_unify_int64(val, LD->stacks.limit);
+  { return PL_unify_uint64(val, LD->stacks.limit);
   } else if ( tbl_is_restraint_flag(key) )
   { return tbl_get_restraint_flag(val, key) == true;
   } else if ( is_arith_flag(key) )

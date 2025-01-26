@@ -148,7 +148,7 @@ f__allocFromBuffer(Buffer b, size_t bytes)
 #define fetchBuffer(b, i, type)	 (baseBuffer(b, type)[i])
 
 #define seekBuffer(b, cnt, type) ((b)->top = sizeof(type) * (cnt) + (b)->base)
-#define sizeOfBuffer(b)          ((b)->top - (b)->base)
+#define sizeOfBuffer(b)          ((size_t) ((b)->top - (b)->base))
 #define freeSpaceBuffer(b)	 ((b)->max - (b)->top)
 #define entriesBuffer(b, type)   (sizeOfBuffer(b) / sizeof(type))
 #define initBuffer(b)            ((b)->base = (b)->top = (b)->static_buffer, \
