@@ -39,10 +39,10 @@ int leapsecs_read(const char *file)
 
   if (fstat(fd,&st) == -1) { close(fd); return -1; }
 
-  t = (struct tai *) malloc(st.st_size);
+  t = (struct tai *) malloc((size_t) st.st_size);
   if (!t) { close(fd); return -1; }
 
-  n = read(fd,(char *) t,st.st_size);
+  n = read(fd,(char *) t, (size_t) st.st_size);
   close(fd);
   if (n != st.st_size) { free(t); return -1; }
 
