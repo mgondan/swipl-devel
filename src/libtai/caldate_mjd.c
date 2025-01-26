@@ -1,9 +1,9 @@
 #include "tai.h"
 #include "caldate.h"
 
-static unsigned long times365[4] = { 0, 365, 730, 1095 } ;
-static unsigned long times36524[4] = { 0, 36524UL, 73048UL, 109572UL } ;
-static unsigned long montab[12] =
+static long times365[4] = { 0, 365, 730, 1095 } ;
+static long times36524[4] = { 0, 36524L, 73048L, 109572L } ;
+static long montab[12] =
 { 0, 31, 61, 92, 122, 153, 184, 214, 245, 275, 306, 337 } ;
 /* month length after february is (306 * m + 5) / 10 */
 
