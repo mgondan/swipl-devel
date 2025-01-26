@@ -7,7 +7,7 @@ int leapsecs_sub(struct tai *t)
 {
   int i;
   uint64_t u;
-  int s;
+  uint64_t s;
 
   if (leapsecs_init() == -1) return 0;
 
