@@ -539,7 +539,7 @@ Balloc
 	int x;
 	Bigint *rv;
 #ifndef Omit_Private_Memory
-	unsigned int len;
+	size_t len;
 #endif
 
 	ACQUIRE_DTOA_LOCK(0);
@@ -554,7 +554,7 @@ Balloc
 #else
 		len = (offsetof(struct Bigint, x[x]) + sizeof(double) - 1)
 			/sizeof(double);
-		if (k <= Kmax && pmem_next - private_mem + len <= PRIVATE_mem) {
+		if (k <= Kmax && (size_t) (pmem_next - private_mem) + len <= PRIVATE_mem) {
 			rv = (Bigint*)pmem_next;
 			pmem_next += len;
 			}
@@ -594,7 +594,7 @@ Bfree
 	}
 
 #define Bcopy(x,y) memcpy((char *)&x->sign, (char *)&y->sign, \
-y->wds*sizeof(Long) + 2*sizeof(int))
+(unsigned int) y->wds*sizeof(Long) + 2*sizeof(int))
 
  static Bigint *
 multadd
@@ -619,7 +619,7 @@ multadd
 	wds = b->wds;
 	x = b->x;
 	i = 0;
-	carry = a;
+	carry = (unsigned int) a;
 	do {
 #ifdef ULLong
 		y = *x * (ULLong)m + carry;
@@ -784,7 +784,7 @@ i2b
 	Bigint *b;
 
 	b = Balloc(1);
-	b->x[0] = i;
+	b->x[0] = (unsigned int) i; // MG: not checked
 	b->wds = 1;
 	return b;
 	}
@@ -1157,7 +1157,7 @@ ulp
 	Long L;
 	U u;
 
-	L = (word0(x) & Exp_mask) - (P-1)*Exp_msk1;
+	L = (Long) ((word0(x) & Exp_mask) - (P-1)*Exp_msk1);
 #ifndef Avoid_Underflow
 #ifndef Sudden_Underflow
 	if (L > 0) {
@@ -1166,7 +1166,7 @@ ulp
 #ifdef IBM
 		L |= Exp_msk1 >> 4;
 #endif
-		word0(&u) = L;
+		word0(&u) = (ULong) L;
 		word1(&u) = 0;
 #ifndef Avoid_Underflow
 #ifndef Sudden_Underflow
@@ -1424,10 +1424,10 @@ ratio
 		}
 #else
 	if (k > 0)
-		word0(&da) += k*Exp_msk1;
+		word0(&da) += (ULong) k*Exp_msk1;
 	else {
 		k = -k;
-		word0(&db) += k*Exp_msk1;
+		word0(&db) += (ULong) k*Exp_msk1;
 		}
 #endif
 	return dval(&da) / dval(&db);
@@ -1591,7 +1591,7 @@ hexnan
 					*sp = s + 1;
 					break;
 					}
-				} while((c = *++s));
+				} while((c = (ULong) *++s));
 			break;
 			}
 #endif
@@ -1847,7 +1847,7 @@ gethex( CONST char **sp, U *rvp, int rounding, int sign)
 			}
 		e1 = n - 0x10;
 		while((n = hexdig[*++s]) !=0 && n <= 0x19) {
-			if (e1 & 0xf8000000)
+			if (e1 & 0xf8000000L)
 				big = 1;
 			e1 = 10*e1 + n - 0x10;
 			}
@@ -2045,9 +2045,9 @@ gethex( CONST char **sp, U *rvp, int rounding, int sign)
 		}
 #ifdef IEEE_Arith
 	if (denorm)
-		word0(rvp) = b->wds > 1 ? b->x[1] & ~0x100000 : 0;
+		word0(rvp) = b->wds > 1 ? (ULong) (b->x[1] & ~0x100000ULL) : 0;
 	else
-		word0(rvp) = (b->x[1] & ~0x100000) | ((e + 0x3ff + 52) << 20);
+		word0(rvp) = (ULong) (b->x[1] & ~0x100000ULL) | (ULong) ((e + 0x3ff + 52) << 20);
 	word1(rvp) = b->x[0];
 #endif
 #ifdef IBM
@@ -2220,7 +2220,7 @@ quorem
 			b->wds = n;
 			}
 		}
-	return q;
+	return (int) q;
 	}
 
 #if defined(Avoid_Underflow) || !defined(NO_STRTOD_BIGCOMP) /*{*/
@@ -2239,7 +2239,7 @@ sulp
 	rv = ulp(x);
 	if (!bc->scale || (i = 2*P + 1 - ((word0(x) & Exp_mask) >> Exp_shift)) <= 0)
 		return rv; /* Is there an example where i <= 0 ? */
-	word0(&u) = Exp_1 + (i << Exp_shift);
+	word0(&u) = Exp_1 + ((ULong) i << Exp_shift);
 	word1(&u) = 0;
 	return rv * u.d;
 	}
@@ -2431,7 +2431,7 @@ retlow1:
 		}
 	else {
 		/* Exact half-way case:  apply round-even rule. */
-		if ((j = ((word0(rv) & Exp_mask) >> Exp_shift) - bc->scale) <= 0) {
+		if ((j = ((int) (word0(rv) & Exp_mask) >> Exp_shift) - bc->scale) <= 0) {
 			i = 1 - j;
 			if (i <= 31) {
 				if (word1(rv) & (0x1 << i))
@@ -2542,9 +2542,9 @@ strtod
 	y = z = 0;
 	for(nd = nf = 0; (c = *s) >= '0' && c <= '9'; nd++, s++)
 		if (nd < 9)
-			y = 10*y + c - '0';
+			y = 10*y + (ULong) c - '0';
 		else if (nd < 16)
-			z = 10*z + c - '0';
+			z = 10*z + (ULong) c - '0';
 	nd0 = nd;
 	bc.dp0 = bc.dp1 = (int)(s - s0);
 	for(s1 = s; s1 > s0 && *--s1 == '0'; )
@@ -2596,9 +2596,9 @@ strtod
 					else if (nd <= DBL_DIG + 1)
 						z *= 10;
 				if (nd++ < 9)
-					y = 10*y + c;
+					y = 10*y + (ULong) c;
 				else if (nd <= DBL_DIG + 1)
-					z = 10*z + c;
+					z = 10*z + (ULong) c;
 				nz = nz1 = 0;
 				}
 			}
@@ -2940,9 +2940,9 @@ strtod
 		if (nd < 9) { /* must recompute y */
 			y = 0;
 			for(i = 0; i < nd0; ++i)
-				y = 10*y + s0[i] - '0';
+				y = 10*y + (unsigned char) (s0[i]) - '0';
 			for(j = bc.dp1; i < nd; ++i)
-				y = 10*y + s0[j++] - '0';
+				y = 10*y + (unsigned char) (s0[j++]) - '0';
 			}
 		}
 #endif
@@ -3244,9 +3244,9 @@ strtod
 						}
 					}
 #endif /*Avoid_Underflow*/
-				L = (word0(&rv) & Exp_mask) - Exp_msk1;
+				L = (Long) ((word0(&rv) & Exp_mask) - Exp_msk1);
 #endif /*Sudden_Underflow}}*/
-				word0(&rv) = L | Bndry_mask1;
+				word0(&rv) = (ULong) (L | Bndry_mask1);
 				word1(&rv) = 0xffffffff;
 #ifdef IBM
 				goto cont;
@@ -3541,7 +3541,7 @@ rv_alloc(int i)
 
 	j = sizeof(ULong);
 	for(k = 0;
-		sizeof(Bigint) - sizeof(ULong) - sizeof(int) + j <= i;
+		(ssize_t) sizeof(Bigint) - (ssize_t) sizeof(ULong) - (ssize_t) sizeof(int) + j <= i;
 		j <<= 1)
 			k++;
 	r = (int*)Balloc(k);
